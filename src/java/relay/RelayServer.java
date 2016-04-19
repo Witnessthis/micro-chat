@@ -5,14 +5,18 @@
  */
 package relay;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 
 /**
  *
@@ -74,7 +78,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<br>resources:</br>"); //for testing purposes
-                out.println("<br>/auth</br>"); //for testing purposes
+                out.println("<br>/auth?user=[username]&psw=[password]</br>"); //for testing purposes
                 out.println("<br>/fileserver/download</br>"); //for testing purposes
                 out.println("<br>/fileserver/upload</br>"); //for testing purposes
                 out.println("<br>/fileserver/delete</br>"); //for testing purposes
@@ -91,7 +95,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h1>resources:</h1>"); //for testing purposes
-                out.println("<br>/auth</br>"); //for testing purposes
+                out.println("<br>/auth?user=[username]&psw=[password]</br>"); //for testing purposes
                 out.println("<br>/fileserver/download</br>"); //for testing purposes
                 out.println("<br>/fileserver/upload</br>"); //for testing purposes
                 out.println("<br>/fileserver/delete</br>"); //for testing purposes
@@ -110,10 +114,33 @@ public class RelayServer extends HttpServlet {
 
                 try {
                     token = auth.authenticateUser(user, psw);
-                    //boolean foundUser = false;
+                    boolean foundUser = false;
+                    String getResponse = "";
+                    String line = "";
+                    Process p = Runtime.getRuntime().exec("curl -X GET https://micro-chat.firebaseio.com/users.json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8");
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(p.getInputStream()));
 
-                    //Could also check if the user already exists before updating.
-                    if (token != null) {
+                    while ((line = in.readLine()) != null) {
+                        getResponse = getResponse + line;
+
+                    }
+
+                    in.close();
+                    JSONObject json = new JSONObject(getResponse);
+                    
+                    Iterator<String> i;
+                    i = json.keys();
+                    while(i.hasNext()){
+                        
+                    }
+                  
+                    
+                    
+                    
+                    
+
+                    if ((token != null) && (foundUser == false)) {
                         String newUser = "curl -X PATCH -d {\"username\":\"" + user + "\",\"psw\":\"" + psw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8";
                         out.print(token);
                         Runtime.getRuntime().exec(newUser);
