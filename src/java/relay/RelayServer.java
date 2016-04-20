@@ -150,8 +150,8 @@ public class RelayServer extends HttpServlet {
 
                     if ((token != null) && (foundUser == false)) {
                         String newUser = "curl -X PATCH -d {\"username\":\"" + user + "\",\"psw\":\"" + psw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8";
-                        out.print(token);
                         Runtime.getRuntime().exec(newUser);
+                        out.print(token);
                     }else if((token != null) && (foundUser == true)){
                         out.print(token);
                     }else{
