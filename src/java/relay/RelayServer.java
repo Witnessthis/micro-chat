@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -67,8 +68,8 @@ public class RelayServer extends HttpServlet {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
-        String state = request.getRequestURI();
-        switch (state) {
+        String resource = request.getRequestURI();
+        switch (resource) {
 
             case "/RelayServer": {
 
@@ -77,11 +78,11 @@ public class RelayServer extends HttpServlet {
                 out.println("<title>Index</title>");
                 out.println("</head>");
                 out.println("<body>");
-                out.println("<br>resources:</br>"); //for testing purposes
-                out.println("<br>/auth?user=[username]&psw=[password]</br>"); //for testing purposes
-                out.println("<br>/fileserver/download</br>"); //for testing purposes
-                out.println("<br>/fileserver/upload</br>"); //for testing purposes
-                out.println("<br>/fileserver/delete</br>"); //for testing purposes
+                out.println("<br>resources:</br>");
+                out.println("<br>/auth?user=[username]&psw=[password]</br>");
+                out.println("<br>/fileserver/download</br>");
+                out.println("<br>/fileserver/upload</br>");
+                out.println("<br>/fileserver/delete</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -94,11 +95,11 @@ public class RelayServer extends HttpServlet {
                 out.println("<title>Index</title>");
                 out.println("</head>");
                 out.println("<body>");
-                out.println("<h1>resources:</h1>"); //for testing purposes
-                out.println("<br>/auth?user=[username]&psw=[password]</br>"); //for testing purposes
-                out.println("<br>/fileserver/download</br>"); //for testing purposes
-                out.println("<br>/fileserver/upload</br>"); //for testing purposes
-                out.println("<br>/fileserver/delete</br>"); //for testing purposes
+                out.println("<h1>resources:</h1>");
+                out.println("<br>/auth?user=[username]&psw=[password]</br>");
+                out.println("<br>/fileserver/download</br>");
+                out.println("<br>/fileserver/upload</br>");
+                out.println("<br>/fileserver/delete</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -128,22 +129,33 @@ public class RelayServer extends HttpServlet {
 
                     in.close();
                     JSONObject json = new JSONObject(getResponse);
-                    
+
                     Iterator<String> i;
                     i = json.keys();
-                    while(i.hasNext()){
-                        
+                    while (i.hasNext()) {
+                        String key = i.next();
+                        System.out.print(key + ": ");
+                        try {
+                            //Print første lag af nestede JSONobjecter.
+                            JSONObject j = json.getJSONObject(key);
+                            
+                            if(j.get("username").equals(user)){
+                                foundUser = true;
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                  
-                    
-                    
-                    
-                    
 
                     if ((token != null) && (foundUser == false)) {
                         String newUser = "curl -X PATCH -d {\"username\":\"" + user + "\",\"psw\":\"" + psw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8";
                         out.print(token);
                         Runtime.getRuntime().exec(newUser);
+                    }else if((token != null) && (foundUser == true)){
+                        out.print(token);
+                    }else{
+                        out.print("Something went wrong. Please try again."); // if token is null (Not properly generated)
                     }
 
                 } catch (Exception ex) {
@@ -164,9 +176,9 @@ public class RelayServer extends HttpServlet {
                 out.println("<title>Upload</title>");
                 out.println("</head>");
                 out.println("<body>");
-                out.println("<br>" + user + "</br>"); //for testing purposes
-                out.println("<br>" + psw + "</br>"); //for testing purposes
-                out.println("<br>" + payload + "</br>"); //for testing purposes
+                out.println("<br>" + user + "</br>");
+                out.println("<br>" + psw + "</br>"); 
+                out.println("<br>" + payload + "</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -181,7 +193,7 @@ public class RelayServer extends HttpServlet {
                 out.println("<title>Download</title>");
                 out.println("</head>");
                 out.println("<body>");
-                out.println("<br>" + URI + "</br>"); //for testing purposes
+                out.println("<br>" + URI + "</br>"); 
                 out.println("</body>");
                 out.println("</html>");
 
@@ -198,9 +210,9 @@ public class RelayServer extends HttpServlet {
                 out.println("<title>Delete</title>");
                 out.println("</head>");
                 out.println("<body>");
-                out.println("<br>" + user + "</br>"); //for testing purposes
-                out.println("<br>" + psw + "</br>"); //for testing purposes
-                out.println("<br>" + URI + "</br>"); //for testing purposes
+                out.println("<br>" + user + "</br>");
+                out.println("<br>" + psw + "</br>"); 
+                out.println("<br>" + URI + "</br>"); 
                 out.println("</body>");
                 out.println("</html>");
 
@@ -235,7 +247,7 @@ public class RelayServer extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "µ-chat";
     }// </editor-fold>
 
 }
