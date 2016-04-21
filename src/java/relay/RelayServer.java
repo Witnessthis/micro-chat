@@ -5,14 +5,24 @@
  */
 package relay;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,7 +76,7 @@ public class RelayServer extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
+        ServletOutputStream out = response.getOutputStream();//getWriter();
 
         String resource = request.getRequestURI();
         switch (resource) {
@@ -80,9 +90,9 @@ public class RelayServer extends HttpServlet {
                 out.println("<body>");
                 out.println("<br>resources:</br>");
                 out.println("<br>/auth?user=[username]&psw=[password]</br>");
-                out.println("<br>/fileserver/download</br>");
-                out.println("<br>/fileserver/upload</br>");
-                out.println("<br>/fileserver/delete</br>");
+//                out.println("<br>/fileserver/download</br>");
+//                out.println("<br>/fileserver/upload</br>");
+//                out.println("<br>/fileserver/delete</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -97,9 +107,9 @@ public class RelayServer extends HttpServlet {
                 out.println("<body>");
                 out.println("<h1>resources:</h1>");
                 out.println("<br>/auth?user=[username]&psw=[password]</br>");
-                out.println("<br>/fileserver/download</br>");
-                out.println("<br>/fileserver/upload</br>");
-                out.println("<br>/fileserver/delete</br>");
+//                out.println("<br>/fileserver/download</br>");
+//                out.println("<br>/fileserver/upload</br>");
+//                out.println("<br>/fileserver/delete</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -138,8 +148,8 @@ public class RelayServer extends HttpServlet {
                         try {
                             //Print første lag af nestede JSONobjecter.
                             JSONObject j = json.getJSONObject(key);
-                            
-                            if(j.get("username").equals(user)){
+
+                            if (j.get("username").equals(user)) {
                                 foundUser = true;
                             }
 
@@ -152,9 +162,9 @@ public class RelayServer extends HttpServlet {
                         String newUser = "curl -X PATCH -d {\"username\":\"" + user + "\",\"psw\":\"" + psw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8";
                         Runtime.getRuntime().exec(newUser);
                         out.print(token);
-                    }else if((token != null) && (foundUser == true)){
+                    } else if ((token != null) && (foundUser == true)) {
                         out.print(token);
-                    }else{
+                    } else {
                         out.print("Something went wrong. Please try again."); // if token is null (Not properly generated)
                     }
 
@@ -166,58 +176,50 @@ public class RelayServer extends HttpServlet {
                 break;
             }
 
-            case "/RelayServer/fileserver/upload": {
-                String user = request.getParameter("user");
-                String psw = request.getParameter("psw");
-                String payload = request.getParameter("payload");
-
-                out.println("<html>");
-                out.println("<head>");
-                out.println("<title>Upload</title>");
-                out.println("</head>");
-                out.println("<body>");
-                out.println("<br>" + user + "</br>");
-                out.println("<br>" + psw + "</br>"); 
-                out.println("<br>" + payload + "</br>");
-                out.println("</body>");
-                out.println("</html>");
-
-                break;
-            }
-
-            case "/RelayServer/fileserver/download": {
-                String URI = request.getParameter("URI");
-
-                out.println("<html>");
-                out.println("<head>");
-                out.println("<title>Download</title>");
-                out.println("</head>");
-                out.println("<body>");
-                out.println("<br>" + URI + "</br>"); 
-                out.println("</body>");
-                out.println("</html>");
-
-                break;
-            }
-
-            case "/RelayServer/fileserver/delete": {
-                String user = request.getParameter("user");
-                String psw = request.getParameter("psw");
-                String URI = request.getParameter("URI");
-
-                out.println("<html>");
-                out.println("<head>");
-                out.println("<title>Delete</title>");
-                out.println("</head>");
-                out.println("<body>");
-                out.println("<br>" + user + "</br>");
-                out.println("<br>" + psw + "</br>"); 
-                out.println("<br>" + URI + "</br>"); 
-                out.println("</body>");
-                out.println("</html>");
-
-                break;
-            }
+//            case "/RelayServer/fileserver/upload": {
+//                String user = request.getParameter("user");
+//                String psw = request.getParameter("psw");
+//                String payload = request.getParameter("payload");
+//
+//                out.println("<html>");
+//                out.println("<head>");
+//                out.println("<title>Upload</title>");
+//                out.println("</head>");
+//                out.println("<body>");
+//                out.println("<br>" + user + "</br>");
+//                out.println("<br>" + psw + "</br>");
+//                out.println("<br>" + payload + "</br>");
+//                out.println("</body>");
+//                out.println("</html>");
+//
+//                break;
+//            }
+//
+//            case "/RelayServer/fileserver/download": {
+//
+//                String URI = request.getParameter("URI");
+//
+//                break;
+//            }
+//
+//            case "/RelayServer/fileserver/delete": {
+//                String user = request.getParameter("user");
+//                String psw = request.getParameter("psw");
+//                String URI = request.getParameter("URI");
+//
+//                out.println("<html>");
+//                out.println("<head>");
+//                out.println("<title>Delete</title>");
+//                out.println("</head>");
+//                out.println("<body>");
+//                out.println("<br>" + user + "</br>");
+//                out.println("<br>" + psw + "</br>");
+//                out.println("<br>" + URI + "</br>");
+//                out.println("</body>");
+//                out.println("</html>");
+//
+//                break;
+//            }
 
             default: {
                 break;
