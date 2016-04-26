@@ -5,10 +5,16 @@
  */
 package relay;
 
+import brugerautorisation.data.Bruger;
+import brugerautorisation.transport.rmi.Brugeradmin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,9 +115,9 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h1>resources:</h1>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
-                out.println("<br>https://micro-chat.firebaseio.com/chat-rooms?print=pretty&auth=[TOKEN]</br>");
-                out.println("<br>https://micro-chat.firebaseio.com/users/[USERNAME].json?print=pretty&auth=[TOKEN]</br>");
+                out.println("<br>http://85.11.31.36:8080/RelayServer/account/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
+                out.println("<br>http://85.11.31.36:8080/RelayServer/account/changepsw?user=[USERNAME]&oldPsw=[PASSWORD]&newPsw=[PASSWORD]</br>");
+                out.println("<br>http://85.11.31.36:8080/RelayServer/account/forgotpsw?user=[USERNAME]</br>");
                 out.println("<br></br>");
                 out.println("<h1>Firebase rules</h1>");
                 out.println("<br>{</br>");
@@ -119,12 +125,18 @@ public class RelayServer extends HttpServlet {
                 out.println("<br>       \".read\": \"auth.isModerator == true\",</br>");
                 out.println("<br>       \".write\": \"auth.isModerator == true\",</br>");
                 out.println("<br></br>");
+                out.println("<br>           \"chat-rooms\": {</br>");
+                out.println("<br>               \"$chatroom\":{</br>");
+                out.println("<br>               \".read\": \"(data.child('password').exists() && data.parent().parent().child('users').child(auth.uid).child('chatrooms').hasChild($chatroom) && data.parent().parent().child('users').child(auth.uid).child('chatrooms').child($chatroom).val() == data.child('password').val()) || (!data.child('password').exists() && data.parent().parent().child('users').child(auth.uid).child('chatrooms').hasChild($chatroom))\",</br>");
+                out.println("<br>               \".write\": \"(data.child('password').exists() && data.parent().parent().child('users').child(auth.uid).child('chatrooms').hasChild($chatroom) && data.parent().parent().child('users').child(auth.uid).child('chatrooms').child($chatroom).val() == data.child('password').val()) || (!data.child('password').exists() && data.parent().parent().child('users').child(auth.uid).child('chatrooms').hasChild($chatroom))\"</br>");
+                out.println("<br>           }</br>");
+                out.println("<br>       },</br>");
+                out.println("<br></br>");
                 out.println("<br>       \"users\": {</br>");
                 out.println("<br>           \"$user\":{</br>");
                 out.println("<br>               \"personal\":{</br>");
                 out.println("<br>               \".read\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\",</br>");
-                out.println("<br>               \".write\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\",</br>");
-                out.println("<br>               \".validate\":\"newData.hasChildren(['alias','email'])\"</br>");
+                out.println("<br>               \".write\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\"</br>");
                 out.println("<br>               },</br>");
                 out.println("<br>               \"favourites\":{</br>");
                 out.println("<br>               \".read\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\",</br>");
@@ -135,6 +147,7 @@ public class RelayServer extends HttpServlet {
                 out.println("<br>               \".write\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\"</br>");
                 out.println("<br>               },</br>");
                 out.println("<br>               </br>");
+                out.println("<br>               \"chatrooms\":{</br>");
                 out.println("<br>               \".read\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\",</br>");
                 out.println("<br>               \".write\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\"</br>");
                 out.println("<br>               },</br>");
@@ -147,11 +160,6 @@ public class RelayServer extends HttpServlet {
                 out.println("<br>               \".write\": \"auth.uid == data.parent().child('username').val() && auth.psw == data.parent().child('psw').val()\"</br>");
                 out.println("<br>               }</br>");
                 out.println("<br>           }</br>");
-                out.println("<br>       },</br>");
-                out.println("<br></br>");
-                out.println("<br>       \"chat-rooms\": {</br>");
-                out.println("<br>           \".read\": \"auth != null\",</br>");
-                out.println("<br>           \".write\": \"auth != null\"</br>");
                 out.println("<br>       }</br>");
                 out.println("<br>   }</br>");
                 out.println("<br>}</br>");
@@ -161,8 +169,62 @@ public class RelayServer extends HttpServlet {
 
                 break;
             }
+            case "/RelayServer/account/forgotpsw": {
 
-            case "/RelayServer/auth": {
+                String user = request.getParameter("user");
+                String extraText = "\nKind regards, the µ-chat team.";
+                Brugeradmin ba = null;
+                try {
+                    ba = (Brugeradmin) Naming.lookup("rmi://javabog.dk/brugeradmin");
+                } catch (Exception ex) {
+                    Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                if (ba != null) {
+                    ba.sendGlemtAdgangskodeEmail(user, extraText);
+                    out.print("A new password has been sent to your email address.");
+                }
+                else{
+                    out.print("Something wen't wrong, try again.");
+                }
+
+                break;
+            }
+            case "/RelayServer/account/changepsw": {
+
+                String user = request.getParameter("user");
+                String oldPsw = request.getParameter("oldPsw");
+                String newPsw = request.getParameter("newPsw");
+                Brugeradmin ba = null;
+                try {
+                    ba = (Brugeradmin) Naming.lookup("rmi://javabog.dk/brugeradmin");
+                } catch (Exception ex) {
+                    Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                if (ba != null) {
+                    Bruger br = null;
+                    try {
+                        br = ba.ændrAdgangskode(user, oldPsw, newPsw);
+                    } catch (Exception ex) {
+                        out.print("Bad username or password");
+                    }
+                    if (br != null) {
+                        if (br.adgangskode.equals(newPsw)) {
+                            out.print("Password changed.");
+
+                            Runtime.getRuntime().exec("curl -X PATCH -d {\"psw\":\"" + newPsw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8");
+                        } else {
+                            out.print("Password not changed. Something went wrong.");
+                        }
+                    }
+
+                }
+
+                break;
+            }
+
+            case "/RelayServer/account/auth": {
 
                 String user = request.getParameter("user");
                 String psw = request.getParameter("psw");
