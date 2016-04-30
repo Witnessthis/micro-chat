@@ -11,10 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,9 +112,13 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h1>resources:</h1>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/account/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/account/changepsw?user=[USERNAME]&oldPsw=[PASSWORD]&newPsw=[PASSWORD]</br>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/account/forgotpsw?user=[USERNAME]</br>");
+                out.println("<br>AUTHENTICATE_USER: GET http://85.11.31.36:8080/RelayServer/account/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
+                out.println("<br>CHANGE_PASSWORD    GET http://85.11.31.36:8080/RelayServer/account/changepsw?user=[USERNAME]&oldPsw=[PASSWORD]&newPsw=[PASSWORD]</br>");
+                out.println("<br>FORGOT_PASSWORD    GET http://85.11.31.36:8080/RelayServer/account/forgotpsw?user=[USERNAME]</br>");
+                out.println("<br>DOWNLOAD_FILE:     GET http://130.226.195.227:8080/microChatFileServer/root/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
+                out.println("<br>LIST_FILES:        GET http://130.226.195.227:8080/microChatFileServer/root/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]</br>");
+                out.println("<br>UPLOAD_FILE:       POST http://130.226.195.227:8080/microChatFileServer/root/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]   (with form-data file=somefile)\n</br>");
+                out.println("<br>DELETE_FILE:       DELETE http://130.226.195.227:8080/microChatFileServer/root/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
                 out.println("<br></br>");
                 out.println("<h1>Firebase rules</h1>");
                 out.println("<br>{</br>");
@@ -169,6 +170,7 @@ public class RelayServer extends HttpServlet {
 
                 break;
             }
+
             case "/RelayServer/account/forgotpsw": {
 
                 String user = request.getParameter("user");
@@ -183,8 +185,7 @@ public class RelayServer extends HttpServlet {
                 if (ba != null) {
                     ba.sendGlemtAdgangskodeEmail(user, extraText);
                     out.print("A new password has been sent to your email address.");
-                }
-                else{
+                } else {
                     out.print("Something wen't wrong, try again.");
                 }
 
