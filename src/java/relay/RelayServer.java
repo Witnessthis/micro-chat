@@ -83,7 +83,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h2>Navigate to the following resource in order to see the micro-chat API</h2>");
-                out.println("<br>/micro-chatAPI</br>");
+                out.println("<br>http://85.11.31.36:8080/RelayServer/micro-chatAPI</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -97,7 +97,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h2>Navigate to the following resource in order to see the micro-chat API</h2>");
-                out.println("<br>/micro-chatAPI</br>");
+                out.println("<br>http://85.11.31.36:8080/RelayServer/micro-chatAPI</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -163,26 +163,34 @@ public class RelayServer extends HttpServlet {
                 break;
             }
 
+            /**
+             * This resource helps the user retrieve his/her password.
+             */
             case "/RelayServer/account/forgotpsw": {
 
                 String user = request.getParameter("user");
-                String extraText = "\nKind regards, the µ-chat team.";
+                String extraText = "\nKind regards, the µ-chat team."; // this will be displayed in the email that the user receives.
                 Brugeradmin ba = null;
                 try {
                     ba = (Brugeradmin) Naming.lookup("rmi://javabog.dk/brugeradmin");
                 } catch (Exception ex) {
                     Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                 }
 
                 if (ba != null) {
                     ba.sendGlemtAdgangskodeEmail(user, extraText);
                     out.print("A new password has been sent to your email address.");
                 } else {
-                    out.print("Something wen't wrong, try again.");
+                    out.print("Something went wrong, try again.");
                 }
 
                 break;
             }
+            
+            /**
+             * This resource helps the user change his/her password.
+             */
             case "/RelayServer/account/changepsw": {
 
                 String user = request.getParameter("user");
@@ -193,30 +201,38 @@ public class RelayServer extends HttpServlet {
                     ba = (Brugeradmin) Naming.lookup("rmi://javabog.dk/brugeradmin");
                 } catch (Exception ex) {
                     Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                 }
 
-                if (ba != null) {
+                if (ba != null) { // check if we got a user.
                     Bruger br = null;
                     try {
                         br = ba.ændrAdgangskode(user, oldPsw, newPsw);
                     } catch (Exception ex) {
                         out.print("Bad username or password");
+                        ex.printStackTrace();
                     }
-                    if (br != null) {
-                        if (br.adgangskode.equals(newPsw)) {
+                    if (br != null) { 
+                        if (br.adgangskode.equals(newPsw)) { // check if the password has been changed.
                             out.print("Password changed.");
-
+                            // update firebase since the user does not have privileges to do it him/herself.
                             Runtime.getRuntime().exec("curl -X PATCH -d {\"psw\":\"" + newPsw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8");
                         } else {
                             out.print("Password not changed. Something went wrong.");
                         }
+                    }else{
+                        out.print("something went wrong, try again.");
                     }
-
+                }else{
+                    out.print("something went wrong, try again.");
                 }
 
                 break;
             }
 
+            /**
+             * This resource helps the user getting access to firebase.
+             */
             case "/RelayServer/account/auth": {
 
                 String user = request.getParameter("user");
@@ -225,11 +241,13 @@ public class RelayServer extends HttpServlet {
                 String token;
 
                 try {
-                    token = auth.authenticateUser(user, psw);
+                    token = auth.authenticateUser(user, psw); // authenticate towards the authentication server and return a token upon success.
                     boolean foundUser = false;
                     String getResponse = "";
                     String line = "";
-                    Process p = Runtime.getRuntime().exec("curl -X GET https://micro-chat.firebaseio.com/users.json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8");
+                    
+                    //check if user exists
+                    Process p = Runtime.getRuntime().exec("curl -X GET https://micro-chat.firebaseio.com/users.json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8"); 
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(p.getInputStream()));
 
@@ -243,15 +261,14 @@ public class RelayServer extends HttpServlet {
 
                     Iterator<String> i;
                     i = json.keys();
-                    while (i.hasNext()) {
+                    while (i.hasNext()) { // itterate over users.
                         String key = i.next();
                         System.out.print(key + ": ");
                         try {
-                            //Print første lag af nestede JSONobjecter.
                             JSONObject j = json.getJSONObject(key);
 
                             if (j.get("username").equals(user) && j.get("psw").equals(psw)) {
-                                foundUser = true;
+                                foundUser = true; // user has been found.
                             }
 
                         } catch (JSONException e) {
@@ -259,12 +276,12 @@ public class RelayServer extends HttpServlet {
                         }
                     }
 
-                    if ((token != null) && (foundUser == false)) {
+                    if ((token != null) && (foundUser == false)) { // if the auth was successful and no user was found. then create the user.
                         String newUser = "curl -X PATCH -d {\"username\":\"" + user + "\",\"psw\":\"" + psw + "\"} https://micro-chat.firebaseio.com/users/" + user + ".json?print=pretty&auth=jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8";
                         Runtime.getRuntime().exec(newUser);
-                        out.print(token);
-                    } else if ((token != null) && (foundUser == true)) {
-                        out.print(token);
+                        out.print(token); // return token.
+                    } else if ((token != null) && (foundUser == true)) { //if the auth was successful and a user was found.
+                        out.print(token); // return token.
                     } else {
                         out.print("-1"); // bad username or password
                     }
