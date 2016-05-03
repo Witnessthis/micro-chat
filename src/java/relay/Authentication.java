@@ -19,31 +19,44 @@ import token.*;
  */
 public class Authentication {
 
+    /**
+     * This method authenticates the user and returns a token upon success.
+     * @param user
+     * @param psw
+     * @return token
+     * @throws Exception 
+     */
     public String authenticateUser(String user, String psw) throws Exception {
         Brugeradmin u = (Brugeradmin) Naming.lookup("rmi://javabog.dk/brugeradmin");
 
         try {
             Bruger usr = u.hentBruger(user, psw);
-            System.out.println("Fik bruger = " + usr);
-            System.out.println("Data: " + Diverse.toString(usr));
+            //System.out.println("Fik bruger = " + usr);
+            //System.out.println("Data: " + Diverse.toString(usr));
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("Bad username or password.");
+            //System.err.println("Bad username or password.");
             return null;
         }
         
-        return generateToken(user, psw);
+        return generateToken(user, psw); // return a token.
     }
 
+    /**
+     * Generates a firebase token.
+     * @param user
+     * @param psw
+     * @return Token
+     */
     private String generateToken(String user, String psw) {
 
         Map<String, Object> payload = new HashMap<String, Object>();
 
-        payload.put("uid", user);
-        payload.put("psw", psw);
+        payload.put("uid", user); // "uid" is needed for firebase, it identifies the user.
+        payload.put("psw", psw); // users password.
         
-        TokenGenerator tokenGenerator = new TokenGenerator("jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8");
+        TokenGenerator tokenGenerator = new TokenGenerator("jsmUjCi94i5xcHmW1iznhZHtX2oEv5amVtwRfGx8"); // create token object with firebase secret.
 
-        return tokenGenerator.createToken(payload);
+        return tokenGenerator.createToken(payload); // create a token and return it. (encrypt with firebase secret)
     }
 }
