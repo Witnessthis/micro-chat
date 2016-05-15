@@ -83,7 +83,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h2>Navigate to the following resource in order to see the micro-chat API</h2>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/micro-chatAPI</br>");
+                out.println("<br>http://microchat.wdk.dk:8080/RelayServer/micro-chatAPI</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -97,7 +97,7 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h2>Navigate to the following resource in order to see the micro-chat API</h2>");
-                out.println("<br>http://85.11.31.36:8080/RelayServer/micro-chatAPI</br>");
+                out.println("<br>http://microchat.wdk.dk:8080/RelayServer/micro-chatAPI</br>");
                 out.println("</body>");
                 out.println("</html>");
 
@@ -112,13 +112,13 @@ public class RelayServer extends HttpServlet {
                 out.println("</head>");
                 out.println("<body>");
                 out.println("<h1>resources:</h1>");
-                out.println("<br>AUTHENTICATE_USER: GET http://85.11.31.36:8080/RelayServer/account/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
-                out.println("<br>CHANGE_PASSWORD:   GET http://85.11.31.36:8080/RelayServer/account/changepsw?user=[USERNAME]&oldPsw=[PASSWORD]&newPsw=[PASSWORD]</br>");
-                out.println("<br>FORGOT_PASSWORD:   GET http://85.11.31.36:8080/RelayServer/account/forgotpsw?user=[USERNAME]</br>");
-                out.println("<br>DOWNLOAD_FILE:     GET http://130.226.195.227:8080/microChatFileServer/rest/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
-                out.println("<br>LIST_FILES:        GET http://130.226.195.227:8080/microChatFileServer/rest/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]</br>");
-                out.println("<br>UPLOAD_FILE:       POST http://130.226.195.227:8080/microChatFileServer/rest/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]   (with form-data file=somefile)\n</br>");
-                out.println("<br>DELETE_FILE:       DELETE http://130.226.195.227:8080/microChatFileServer/rest/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
+                out.println("<br>AUTHENTICATE_USER: GET http://microchat.wdk.dk:8080/RelayServer/account/auth?user=[USERNAME]&psw=[PASSWORD]</br>");
+                out.println("<br>CHANGE_PASSWORD:   GET http://microchat.wdk.dk:8080/RelayServer/account/changepsw?user=[USERNAME]&oldPsw=[PASSWORD]&newPsw=[PASSWORD]</br>");
+                out.println("<br>FORGOT_PASSWORD:   GET http://microchat.wdk.dk:8080/RelayServer/account/forgotpsw?user=[USERNAME]</br>");
+                out.println("<br>DOWNLOAD_FILE:     GET http://microchatfileserver.wdk.dk:8080/microChatFileServer/rest/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
+                out.println("<br>LIST_FILES:        GET http://microchatfileserver.wdk.dk:8080/microChatFileServer/rest/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]</br>");
+                out.println("<br>UPLOAD_FILE:       POST http://microchatfileserver.wdk.dk:8080/microChatFileServer/rest/files/[USERNAME]?username=[USERNAME]&password=[PASSWORD]   (with form-data file=somefile)\n</br>");
+                out.println("<br>DELETE_FILE:       DELETE http://microchatfileserver.wdk.dk:8080/microChatFileServer/rest/files/[USERNAME]/[FILENAME]?username=[USERNAME]&password=[PASSWORD]</br>");
                 out.println("<br></br>");
                 out.println("<h1>Firebase rules</h1>");
                 out.println("<br>{</br>");
